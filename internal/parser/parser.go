@@ -61,18 +61,24 @@ func (c CronParser) HumanReadableStr() (string, error) {
 
 var HINTS = [...]string{"minute", "hour", "day of month", "month", "day of week"}
 
-// hint index.
-func (c CronParser) GetHints(pad, hintIdx int) string {
+func (c CronParser) GetHints(padding, hintIdx int) string {
 	if hintIdx > len(HINTS)-1 {
-		panic("wtf bro")
+		panic("out of bounds")
 	}
 	str := strings.Builder{}
-	spaces := strings.Repeat(" ", pad)
+	spaces := strings.Repeat(" ", padding)
 	str.Grow(len(spaces)*2 + 20)
 	str.WriteString(spaces)
-	str.WriteString("│\n")
+	str.WriteString("│\n" + spaces + "│\n")
+	hint := HINTS[hintIdx]
+	if len(hint) > 8 {
+		newPad := padding - len(hint)/2
+		if newPad < 0 {
+			newPad = 0
+		}
+		spaces = strings.Repeat(" ", newPad)
+	}
 	str.WriteString(spaces)
-	str.WriteString("╰─ ")
-	str.WriteString(HINTS[hintIdx])
+	str.WriteString(hint)
 	return str.String()
 }

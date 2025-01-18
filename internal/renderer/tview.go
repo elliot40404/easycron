@@ -1,6 +1,7 @@
 package renderer
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
@@ -20,17 +21,10 @@ func TviewRenderer(cp Parser) {
 	separator.SetBackgroundColor(tcell.ColorDefault)
 	separator.SetTextColor(tcell.ColorWhite)
 
-	inputField := tview.NewInputField().
+	inputField := tview.NewTextArea().
 		SetPlaceholder("* * * * *").
-		SetFieldBackgroundColor(tcell.ColorDefault).
-		SetFieldTextColor(tcell.ColorWhite).
-		SetPlaceholderStyle(tcell.StyleDefault.Background(tcell.ColorDefault)).
-		SetLabelStyle(tcell.StyleDefault.Background(tcell.ColorDefault))
+		SetPlaceholderStyle(tcell.StyleDefault.Background(tcell.ColorDefault))
 	inputField.SetBackgroundColor(tcell.ColorDefault)
-	inputField.SetAcceptanceFunc(func(text string, _ rune) bool {
-		inpLen := len(strings.Split(strings.Trim(text, " "), " "))
-		return text != " " && inpLen <= 5 && !strings.HasSuffix(text, "  ")
-	})
 
 	hreadableStr := tview.NewTextView().SetTextColor(tcell.ColorYellow.TrueColor())
 	hreadableStr.SetBackgroundColor(tcell.ColorDefault)
@@ -38,8 +32,12 @@ func TviewRenderer(cp Parser) {
 	hintsView := tview.NewTextView().SetTextColor(tcell.ColorOrangeRed.TrueColor())
 	hintsView.SetBackgroundColor(tcell.ColorDefault)
 
+	debugView := tview.NewTextView().SetTextColor(tcell.ColorYellow.TrueColor()).SetText("DEBUG")
+	debugView.SetBackgroundColor(tcell.ColorDefault)
+
 	left.AddItem(inputField, 0, 4, true)
 	left.AddItem(hintsView, 0, 96, false)
+	left.AddItem(debugView, 0, 10, false)
 
 	right.AddItem(hreadableStr, 0, 1, false)
 
@@ -49,10 +47,11 @@ func TviewRenderer(cp Parser) {
 		AddItem(right, 0, 4, false)
 	flex.SetBackgroundColor(tcell.ColorDefault)
 
-	updateExpr := func(text string) {
+	updateExpr := func() {
 		hreadableStr.Clear()
 		hintsView.Clear()
 
+		text := inputField.GetText()
 		text = strings.Trim(text, " ")
 		if text == "" {
 			return
@@ -60,6 +59,7 @@ func TviewRenderer(cp Parser) {
 
 		splitStr := strings.Split(text, " ")
 		inpLen := len(splitStr)
+
 		if inpLen > 5 {
 			hreadableStr.SetText("invalid cron expression")
 			return
@@ -96,6 +96,20 @@ func TviewRenderer(cp Parser) {
 	}
 
 	inputField.SetChangedFunc(updateExpr)
+	inputField.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		text := inputField.GetText()
+
+		// VALIDATION
+		if (text == "" || strings.HasSuffix(text, " ") || len(strings.Split(strings.TrimSuffix(text, " "), " ")) >= 5) && event.Rune() == 32 {
+			return nil
+		}
+
+		// TODO: map cursor pos to elem and show hint
+		_, fc, _, _ := inputField.GetCursor()
+		debugView.SetText(fmt.Sprintf("\nfc = %v | key = %v", fc, event.Rune()))
+
+		return event
+	})
 
 	if err := app.SetRoot(flex, true).Run(); err != nil {
 		panic(err)

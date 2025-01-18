@@ -72,7 +72,7 @@ func (c CronParser) GetHints(pad, hintIdx int) string {
 	str.WriteString(spaces)
 	str.WriteString("│\n")
 	str.WriteString(spaces)
-	str.WriteString("╰── ")
+	str.WriteString("╰─ ")
 	str.WriteString(HINTS[hintIdx])
 	return str.String()
 }

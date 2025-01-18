@@ -35,18 +35,18 @@ func TviewRenderer(cp Parser) {
 	hreadableStr := tview.NewTextView().SetTextColor(tcell.ColorYellow.TrueColor())
 	hreadableStr.SetBackgroundColor(tcell.ColorDefault)
 
-	hintsView := tview.NewTextView().SetTextColor(tcell.ColorBlue.TrueColor())
+	hintsView := tview.NewTextView().SetTextColor(tcell.ColorOrangeRed.TrueColor())
 	hintsView.SetBackgroundColor(tcell.ColorDefault)
 
-	left.AddItem(inputField, 0, 5, true)
-	left.AddItem(hintsView, 0, 95, false)
+	left.AddItem(inputField, 0, 4, true)
+	left.AddItem(hintsView, 0, 96, false)
 
 	right.AddItem(hreadableStr, 0, 1, false)
 
 	flex := tview.NewFlex().
 		AddItem(left, 0, 1, true).
 		AddItem(separator, 1, 0, false).
-		AddItem(right, 0, 6, false)
+		AddItem(right, 0, 4, false)
 	flex.SetBackgroundColor(tcell.ColorDefault)
 
 	updateExpr := func(text string) {
@@ -58,14 +58,16 @@ func TviewRenderer(cp Parser) {
 			return
 		}
 
-		inpLen := len(strings.Split(text, " "))
+		splitStr := strings.Split(text, " ")
+		inpLen := len(splitStr)
 		if inpLen > 5 {
 			hreadableStr.SetText("INVALID CRON EXPRESSION")
 			return
 		}
 
-		// FIX: Support multi char inp block. Dynamic padding based on block len
-		padding := (inpLen + (inpLen - 1)) - 1
+		currElem := splitStr[inpLen-1]
+		padding := len(text) - len(currElem)
+
 		hintsView.SetText(cp.GetHints(padding, inpLen-1))
 
 		err := cp.SetExpr(text)
@@ -93,9 +95,7 @@ func TviewRenderer(cp Parser) {
 		hreadableStr.SetText(newStr.String())
 	}
 
-	inputField.SetChangedFunc(func(text string) {
-		updateExpr(text)
-	})
+	inputField.SetChangedFunc(updateExpr)
 
 	if err := app.SetRoot(flex, true).Run(); err != nil {
 		panic(err)

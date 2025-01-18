@@ -61,7 +61,7 @@ func TviewRenderer(cp Parser) {
 		splitStr := strings.Split(text, " ")
 		inpLen := len(splitStr)
 		if inpLen > 5 {
-			hreadableStr.SetText("INVALID CRON EXPRESSION")
+			hreadableStr.SetText("invalid cron expression")
 			return
 		}
 
@@ -72,12 +72,12 @@ func TviewRenderer(cp Parser) {
 
 		err := cp.SetExpr(text)
 		if err != nil {
-			hreadableStr.SetText("INVALID CRON EXPRESSION")
+			hreadableStr.SetText("invalid cron expression")
 			return
 		}
 		desc, err := cp.HumanReadableStr()
 		if err != nil {
-			hreadableStr.SetText("INVALID CRON EXPRESSION")
+			hreadableStr.SetText("invalid cron expression")
 			return
 		}
 		newStr := strings.Builder{}
@@ -86,7 +86,7 @@ func TviewRenderer(cp Parser) {
 		newStr.WriteString("Next 3 Iterations:\n\n")
 		iterations, err := cp.NextInstances(3)
 		if err != nil {
-			hreadableStr.SetText("INVALID CRON EXPRESSION")
+			hreadableStr.SetText("invalid cron expression")
 			return
 		}
 		for _, i := range iterations {

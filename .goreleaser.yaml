@@ -13,9 +13,9 @@ before:
     - go mod tidy
 
 builds:
-  - main: ./cmd/bron
-    id: bron
-    binary: bron
+  - main: ./cmd/easycron
+    id: easycron
+    binary: easycron
     env:
       - CGO_ENABLED=0
     goos:

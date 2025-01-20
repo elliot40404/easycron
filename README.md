@@ -1,5 +1,9 @@
 # Easycron
 
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/elliot40404/easycron/release.yml)](https://github.com/elliot40404/easycron/actions/workflows/release.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/elliot40404/easycron)](https://goreportcard.com/report/github.com/elliot40404/easycron)
+[![Go Reference](https://pkg.go.dev/badge/github.com/elliot40404/easycron.svg)](https://pkg.go.dev/github.com/elliot40404/easycron)
+
 ```sh
  ______
 |  ____|
@@ -28,10 +32,24 @@ go install github.com/elliot40404/easycron/cmd/easycron@latest
 
 ```bash
 easycron # to start in interactive mode
-
-easycron "0 0 * * *" # to evaluate an expression
 ```
+
+## Features
+
+- [x] Interactive mode
+- [x] Human readable cron expression
+- [x] Next 3 iterations
+- [ ] Non interactive mode
+- [ ] Configurable cli options
+- [ ] Schedule cron jobs directly from easycron
+- [ ] Cron job manager
 
 ## License
 
 MIT
+
+## Support My Work
+
+<a href="https://ko-fi.com/elliot40404">
+<img src="https://storage.ko-fi.com/cdn/brandasset/v2/support_me_on_kofi_red.png" alt="Support Me on Ko-fi" width="200">
+</a>

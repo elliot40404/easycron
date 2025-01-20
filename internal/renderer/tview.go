@@ -1,7 +1,6 @@
 package renderer
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
@@ -32,13 +31,8 @@ func TviewRenderer(cp Parser) {
 	hintsView := tview.NewTextView().SetTextColor(tcell.ColorOrangeRed.TrueColor())
 	hintsView.SetBackgroundColor(tcell.ColorDefault)
 
-	debugView := tview.NewTextView().SetTextColor(tcell.ColorYellow.TrueColor()).SetText("DEBUG")
-	debugView.SetBackgroundColor(tcell.ColorDefault)
-
 	left.AddItem(inputField, 0, 4, true)
 	left.AddItem(hintsView, 0, 96, false)
-	left.AddItem(debugView, 0, 10, false)
-
 	right.AddItem(hreadableStr, 0, 1, false)
 
 	flex := tview.NewFlex().
@@ -98,16 +92,21 @@ func TviewRenderer(cp Parser) {
 	inputField.SetChangedFunc(updateExpr)
 	inputField.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		text := inputField.GetText()
-
 		// VALIDATION
 		if (text == "" || strings.HasSuffix(text, " ") || len(strings.Split(strings.TrimSuffix(text, " "), " ")) >= 5) && event.Rune() == 32 {
 			return nil
 		}
-
-		// TODO: map cursor pos to elem and show hint
 		_, fc, _, _ := inputField.GetCursor()
-		debugView.SetText(fmt.Sprintf("\nfc = %v | key = %v", fc, event.Rune()))
-
+		idx := fc / 2
+		if idx > 4 {
+			return event
+		}
+		items := strings.Split(text, " ")
+		padding := 0
+		for _, item := range items[0:idx] {
+			padding += len(item) + 1
+		}
+		hintsView.SetText(cp.GetHints(padding, idx))
 		return event
 	})
 

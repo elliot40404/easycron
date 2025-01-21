@@ -7,14 +7,17 @@ build_cmd := if os() == "windows" { "go build -o ./bin/easycron.exe ./cmd/easycr
 build: clean lint
     {{build_cmd}}
 
-run:
-    go run ./cmd/easycron/
+run iter='' cron='':
+    go run ./cmd/easycron/ {{iter}} "{{cron}}"
+
+exec iter='' cron='':
+    ./bin/easycron {{iter}} "{{cron}}"
+
 
 install:
     go install ./cmd/easycron/
 
-build-run: build
-    ./bin/easycron
+build-run: build exec
 
 rmcmd := if os() == "windows" { "mkdir ./bin -Force; Remove-Item -Recurse -Force ./bin" } else { "rm -rf ./bin" }
 

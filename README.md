@@ -34,6 +34,8 @@ go install github.com/elliot40404/easycron/cmd/easycron@latest
 
 ```bash
 easycron # to start in interactive mode
+
+easycron <options> <expression>
 ```
 
 ## Features
@@ -41,8 +43,8 @@ easycron # to start in interactive mode
 - [x] Interactive mode
 - [x] Human readable cron expression
 - [x] Next 3 iterations
-- [ ] Non interactive mode
-- [ ] Configurable cli options
+- [x] Non interactive mode
+- [x] Configurable cli options
 - [ ] Schedule cron jobs directly from easycron
 - [ ] Cron job manager
 

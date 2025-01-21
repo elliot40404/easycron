@@ -10,11 +10,15 @@ import (
 )
 
 func main() {
-	err := cli.ParseArgs()
+	args, err := cli.ParseArgs()
 	if err != nil {
 		slog.Error("something went wrong", "error", err)
 		os.Exit(1)
 	}
-	cronParser := parser.NewCronParser()
+	cronParser := parser.NewCronParser(args)
+	if args.Expr != "" {
+		renderer.ConsoleRenderer(cronParser)
+		return
+	}
 	renderer.TviewRenderer(cronParser)
 }

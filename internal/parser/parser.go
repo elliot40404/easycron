@@ -7,16 +7,47 @@ import (
 
 	"github.com/lnquy/cron"
 	cp "github.com/robfig/cron/v3"
+
+	"github.com/elliot40404/easycron/internal/cli"
 )
 
 type CronParser struct {
 	expr       string
+	iter       int
 	parser     cp.Schedule
 	descriptor *cron.ExpressionDescriptor
 }
 
-func NewCronParser() *CronParser {
-	return &CronParser{}
+func (c *CronParser) String() string {
+	str := strings.Builder{}
+	hs, err := c.HumanReadableStr()
+	if err != nil {
+		return "something went wrong"
+	}
+	str.WriteString(hs + "\n")
+	iterations, err := c.NextInstances(c.iter)
+	if err != nil {
+		return "something went wrong"
+	}
+	for _, i := range iterations {
+		str.WriteString(i + "\n")
+	}
+	return str.String()
+}
+
+func NewCronParser(args cli.ParsedArgs) *CronParser {
+	return &CronParser{
+		iter: args.Iter,
+		expr: args.Expr,
+	}
+}
+
+func (c *CronParser) Validate() error {
+	err := c.SetExpr(c.expr)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Update the cron expression.

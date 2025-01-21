@@ -7,11 +7,11 @@ import (
 )
 
 const (
-	Version = "0.0.1"
+	Version = "0.0.2"
 	Author  = "elliot40404<avishek40404@gmail.com>"
 	Name    = "easycron"
 	Desc    = "Easycron is a cross platform cli app that helps configure cron jobs"
-	Example = "easycron <options>"
+	Example = "easycron <options> <expression>"
 )
 
 func help() {
@@ -25,16 +25,23 @@ Usage:
 Options:
   -h, --help            Show this help message
   -v, --version         Show version information
+  -i                    Specify number of iterations for non-interactive mode
 
 Examples:
   %s
 `, Name, Version, Desc, Example, Example)
 }
 
-func ParseArgs() error {
+type ParsedArgs struct {
+	Expr string
+	Iter int
+}
+
+func ParseArgs() (ParsedArgs, error) {
 	helpFlag := flag.Bool("help", false, "Show help message")
 	versionFlag := flag.Bool("v", false, "Show version information")
 	versionLongFlag := flag.Bool("version", false, "Show version information")
+	iter := flag.Int("i", 3, "num of iterations to display")
 
 	flag.Usage = help
 
@@ -50,5 +57,14 @@ func ParseArgs() error {
 		os.Exit(0)
 	}
 
-	return nil
+	expr := ""
+
+	if flag.NArg() > 0 {
+		expr = flag.Arg(0)
+	}
+
+	return ParsedArgs{
+		Expr: expr,
+		Iter: *iter,
+	}, nil
 }

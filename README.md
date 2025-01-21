@@ -16,6 +16,8 @@
                             - elliot40404
 ```
 
+![demo](./images/demo.gif)
+
 Easycron is a simple cross platform cli app that helps you with cron
 
 ## Why

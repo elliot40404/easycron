@@ -20,5 +20,6 @@ func main() {
 		renderer.ConsoleRenderer(cronParser)
 		return
 	}
-	renderer.TviewRenderer(cronParser)
+	// renderer.TviewRenderer(cronParser)
+	renderer.CharmRenderer(cronParser)
 }

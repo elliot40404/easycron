@@ -22,12 +22,12 @@ func (c *CronParser) String() string {
 	str := strings.Builder{}
 	hs, err := c.HumanReadableStr()
 	if err != nil {
-		return "something went wrong"
+		return "invalid cron expression"
 	}
-	str.WriteString(hs + "\n")
+	str.WriteString(hs + "\n\n" + "Next At: \n\n")
 	iterations, err := c.NextInstances(c.iter)
 	if err != nil {
-		return "something went wrong"
+		return "invalid cron expression"
 	}
 	for _, i := range iterations {
 		str.WriteString(i + "\n")
@@ -48,6 +48,16 @@ func (c *CronParser) Validate() error {
 		return err
 	}
 	return nil
+}
+
+func (c *CronParser) IncIter() {
+	c.iter++
+}
+
+func (c *CronParser) DecIter() {
+	if c.iter > 0 {
+		c.iter--
+	}
 }
 
 // Update the cron expression.

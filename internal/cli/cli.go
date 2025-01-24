@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	Version = "0.0.2"
+	Version = "0.0.3"
 	Author  = "elliot40404<avishek40404@gmail.com>"
 	Name    = "easycron"
 	Desc    = "Easycron is a cross platform cli app that helps configure cron jobs"
@@ -25,7 +25,7 @@ Usage:
 Options:
   -h, --help            Show this help message
   -v, --version         Show version information
-  -i                    Specify number of iterations for non-interactive mode
+  -i                    Specify number of iterations
 
 Examples:
   %s

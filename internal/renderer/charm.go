@@ -3,6 +3,7 @@ package renderer
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -17,6 +18,7 @@ type model struct {
 	textInput textinput.Model
 	err       error
 	output    string
+	hints     string
 }
 
 func initialModel(parser Parser) model {
@@ -39,6 +41,7 @@ func (m model) Init() tea.Cmd {
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
+	isSpace := false
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
@@ -50,6 +53,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.parser.IncIter()
 		case tea.KeyCtrlJ:
 			m.parser.DecIter()
+		case tea.KeySpace:
+			isSpace = true
 		}
 
 	case errMsg:
@@ -59,6 +64,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	text := m.textInput.Value()
 
+	if (text == "" || strings.HasSuffix(text, " ") || len(strings.Split(strings.TrimSuffix(text, " "), " ")) >= 5) && isSpace {
+		return m, cmd
+	}
+
 	if text != "" {
 		err := m.parser.SetExpr(text)
 		if err != nil {
@@ -67,6 +76,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, cmd
 		}
 		m.output = fmt.Sprint(m.parser)
+
 	}
 
 	m.textInput, cmd = m.textInput.Update(msg)
@@ -75,17 +85,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	return fmt.Sprintf(
-		"Enter Cron Expression: \n\n%s\n\n%s\n\n%s",
+		"Enter Cron Expression: \n\n%s\n\n%s",
 		m.textInput.View(),
-		"(esc/ctrl+c to quit; ctrl+k to increment next at; ctrl+j to decrement next at)",
 		m.output,
 	) + "\n"
 }
 
 func CharmRenderer(cp Parser) {
-	p := tea.NewProgram(initialModel(cp))
+	p := tea.NewProgram(initialModel(cp), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Print("\033[H")
 }

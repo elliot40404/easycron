@@ -42,6 +42,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	isSpace := false
+	text := m.textInput.Value()
+	items := strings.Split(text, " ")
+	inpLen := len(items)
+	updateHint := true
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
@@ -55,6 +60,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.parser.DecIter()
 		case tea.KeySpace:
 			isSpace = true
+		case tea.KeyLeft, tea.KeyRight:
+			cpos := m.textInput.Position()
+			idx := cpos / 2
+			if idx <= 4 {
+				padding := 0
+				for _, item := range items[0:idx] {
+					padding += len(item) + 1
+				}
+				m.hints = m.parser.GetHints(padding+len(m.textInput.Prompt), idx)
+				updateHint = false
+			}
 		}
 
 	case errMsg:
@@ -62,11 +78,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	text := m.textInput.Value()
+	if inpLen <= 5 && updateHint {
+		currElem := items[inpLen-1]
+		padding := len(text) - len(currElem)
+		m.hints = m.parser.GetHints(padding+len(m.textInput.Prompt), inpLen-1)
+	}
 
-	if (text == "" || strings.HasSuffix(text, " ") || len(strings.Split(strings.TrimSuffix(text, " "), " ")) >= 5) && isSpace {
+	if (text == "" || strings.HasSuffix(text, " ") || len(strings.Split(strings.TrimSpace(text), " ")) >= 5) && isSpace {
 		return m, cmd
 	}
+
+	text = strings.TrimSpace(text)
 
 	if text != "" {
 		err := m.parser.SetExpr(text)
@@ -76,7 +98,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, cmd
 		}
 		m.output = fmt.Sprint(m.parser)
-
 	}
 
 	m.textInput, cmd = m.textInput.Update(msg)
@@ -85,8 +106,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	return fmt.Sprintf(
-		"Enter Cron Expression: \n\n%s\n\n%s",
+		"Enter Cron Expression: \n\n%s\n%s\n\n%s",
 		m.textInput.View(),
+		m.hints,
 		m.output,
 	) + "\n"
 }

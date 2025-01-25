@@ -1,3 +1,4 @@
+// Package renderer provides renderers for the cron expression
 package renderer
 
 import (
@@ -40,12 +41,7 @@ func (m model) Init() tea.Cmd {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
-
 	isSpace := false
-	text := m.textInput.Value()
-	items := strings.Split(text, " ")
-	inpLen := len(items)
-	updateHint := true
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -54,23 +50,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case tea.KeyEnter:
 			return m, tea.Quit
-		case tea.KeyCtrlK:
+		case tea.KeyUp:
 			m.parser.IncIter()
-		case tea.KeyCtrlJ:
+		case tea.KeyDown:
 			m.parser.DecIter()
 		case tea.KeySpace:
 			isSpace = true
-		case tea.KeyLeft, tea.KeyRight:
-			cpos := m.textInput.Position()
-			idx := cpos / 2
-			if idx <= 4 {
-				padding := 0
-				for _, item := range items[0:idx] {
-					padding += len(item) + 1
-				}
-				m.hints = m.parser.GetHints(padding+len(m.textInput.Prompt), idx)
-				updateHint = false
-			}
 		}
 
 	case errMsg:
@@ -78,18 +63,31 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	if inpLen <= 5 && updateHint {
-		currElem := items[inpLen-1]
-		padding := len(text) - len(currElem)
-		m.hints = m.parser.GetHints(padding+len(m.textInput.Prompt), inpLen-1)
+	text := m.textInput.Value()
+	items := strings.Split(text, " ")
+	indexes := findRuneIndexes(text, ' ')
+	cpos := m.textInput.Position()
+	idx := 0
+	for i, val := range indexes {
+		if cpos <= val {
+			idx = i
+			break
+		}
+		if cpos > indexes[len(indexes)-1] {
+			idx = i + 1
+		}
 	}
+	padding := 0
+	for _, item := range items[0:idx] {
+		padding += len(item) + 1
+	}
+	m.hints = m.parser.GetHints(padding+len(m.textInput.Prompt), idx)
 
 	if (text == "" || strings.HasSuffix(text, " ") || len(strings.Split(strings.TrimSpace(text), " ")) >= 5) && isSpace {
 		return m, cmd
 	}
 
 	text = strings.TrimSpace(text)
-
 	if text != "" {
 		err := m.parser.SetExpr(text)
 		if err != nil {
@@ -113,9 +111,20 @@ func (m model) View() string {
 	) + "\n"
 }
 
+// CharmRenderer renders the cron expression using the charm library
 func CharmRenderer(cp Parser) {
 	p := tea.NewProgram(initialModel(cp), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func findRuneIndexes(str string, search rune) []int {
+	var indexes []int
+	for i, r := range str {
+		if r == search {
+			indexes = append(indexes, i)
+		}
+	}
+	return indexes
 }

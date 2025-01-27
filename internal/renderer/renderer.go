@@ -6,4 +6,10 @@ type Parser interface {
 	HumanReadableStr() (string, error)
 	GetHints(pad, hintIdx int) string
 	Validate() error
+	IncIter()
+	DecIter()
+}
+
+type Renderer interface {
+	Render(cp Parser)
 }

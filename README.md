@@ -48,6 +48,15 @@ easycron <options> <expression>
 - [ ] Schedule cron jobs directly from easycron
 - [ ] Cron job manager
 
+## Build From Source with alternative engines
+
+```bash
+git clone https://github.com/elliot40404/easycron.git
+cd easycron
+go build -o easycron cmd/easycron/ # new charm engine
+go build -tags tview -o easycron cmd/easycron/ # old tview engine
+```
+
 ## License
 
 MIT

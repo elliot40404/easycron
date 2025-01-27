@@ -1,3 +1,6 @@
+//go:build tview
+// +build tview
+
 package renderer
 
 import (
@@ -7,7 +10,13 @@ import (
 	"github.com/rivo/tview"
 )
 
-func TviewRenderer(cp Parser) {
+type Tview struct{}
+
+func NewRenderer() Renderer {
+	return Tview{}
+}
+
+func (t Tview) Render(cp Parser) {
 	app := tview.NewApplication().EnablePaste(true)
 
 	left := tview.NewFlex().SetDirection(tview.FlexRow)

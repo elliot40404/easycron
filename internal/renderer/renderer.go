@@ -9,3 +9,7 @@ type Parser interface {
 	IncIter()
 	DecIter()
 }
+
+type Renderer interface {
+	Render(cp Parser)
+}

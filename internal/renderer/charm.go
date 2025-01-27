@@ -1,4 +1,6 @@
-// Package renderer provides renderers for the cron expression
+//go:build !tview
+// +build !tview
+
 package renderer
 
 import (
@@ -111,12 +113,17 @@ func (m model) View() string {
 	) + "\n"
 }
 
-// CharmRenderer renders the cron expression using the charm library
-func CharmRenderer(cp Parser) {
+type Charm struct{}
+
+func (c Charm) Render(cp Parser) {
 	p := tea.NewProgram(initialModel(cp), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func NewRenderer() Renderer {
+	return Charm{}
 }
 
 func findRuneIndexes(str string, search rune) []int {

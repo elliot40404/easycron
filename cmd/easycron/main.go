@@ -20,6 +20,10 @@ func main() {
 		renderer.ConsoleRenderer(cronParser)
 		return
 	}
-	renderer := renderer.NewRenderer()
-	renderer.Render(cronParser)
+	r := renderer.NewRenderer()
+	err = r.Render(cronParser)
+	if err != nil {
+		slog.Error("something went wrong", "error", err)
+		os.Exit(1)
+	}
 }

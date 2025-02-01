@@ -1,11 +1,9 @@
 //go:build !tview
-// +build !tview
 
 package renderer
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -14,22 +12,27 @@ import (
 
 type (
 	errMsg error
+	Charm  struct{}
+	model  struct {
+		parser    Parser
+		textInput textinput.Model
+		err       error
+		output    string
+		hints     string
+	}
 )
 
-type model struct {
-	parser    Parser
-	textInput textinput.Model
-	err       error
-	output    string
-	hints     string
+const textWidth = 20
+
+func NewRenderer() Renderer {
+	return Charm{}
 }
 
 func initialModel(parser Parser) model {
 	ti := textinput.New()
 	ti.Placeholder = "* * * * *"
 	ti.Focus()
-	ti.Width = 20
-
+	ti.Width = textWidth
 	return model{
 		parser:    parser,
 		textInput: ti,
@@ -37,7 +40,7 @@ func initialModel(parser Parser) model {
 	}
 }
 
-func (m model) Init() tea.Cmd {
+func (model) Init() tea.Cmd {
 	return textinput.Blink
 }
 
@@ -66,39 +69,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	text := m.textInput.Value()
-	items := strings.Split(text, " ")
-	indexes := findRuneIndexes(text, ' ')
-	cpos := m.textInput.Position()
-	idx := 0
-	for i, val := range indexes {
-		if cpos <= val {
-			idx = i
-			break
-		}
-		if cpos > indexes[len(indexes)-1] {
-			idx = i + 1
-		}
-	}
-	padding := 0
-	for _, item := range items[0:idx] {
-		padding += len(item) + 1
-	}
-	m.hints = m.parser.GetHints(padding+len(m.textInput.Prompt), idx)
+	updateHint(&m, text)
 
-	if (text == "" || strings.HasSuffix(text, " ") || len(strings.Split(strings.TrimSpace(text), " ")) >= 5) && isSpace {
+	if !validInput(text, isSpace) {
 		return m, cmd
 	}
 
-	text = strings.TrimSpace(text)
-	if text != "" {
-		err := m.parser.SetExpr(text)
-		if err != nil {
-			m.output = "invalid cron expression"
-			m.textInput, cmd = m.textInput.Update(msg)
-			return m, cmd
-		}
-		m.output = fmt.Sprint(m.parser)
-	}
+	updateOutput(&m, text)
 
 	m.textInput, cmd = m.textInput.Update(msg)
 	return m, cmd
@@ -113,17 +90,58 @@ func (m model) View() string {
 	) + "\n"
 }
 
-type Charm struct{}
-
-func (c Charm) Render(cp Parser) {
+func (Charm) Render(cp Parser) error {
 	p := tea.NewProgram(initialModel(cp), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }
 
-func NewRenderer() Renderer {
-	return Charm{}
+func updateHint(m *model, text string) {
+	if text == "" {
+		m.hints = m.parser.GetHints(len(m.textInput.Prompt), 0)
+		return
+	}
+	items := strings.Split(text, " ")
+	indexes := findRuneIndexes(text, ' ')
+	cpos := m.textInput.Position()
+	var idx, padding int
+	for i, val := range indexes {
+		if cpos <= val {
+			idx = i
+			break
+		}
+		if cpos > indexes[len(indexes)-1] && idx < 4 {
+			idx = i + 1
+		}
+	}
+	for _, item := range items[0:idx] {
+		padding += len(item) + 1
+	}
+	m.hints = m.parser.GetHints(padding+len(m.textInput.Prompt), idx)
+}
+
+func validInput(text string, isSpace bool) bool {
+	isEmptyOrEndsWithSpace := text == "" || strings.HasSuffix(text, " ")
+	wordCount := len(strings.Split(strings.TrimSpace(text), " "))
+	if (isEmptyOrEndsWithSpace || wordCount >= 5) && isSpace {
+		return false
+	}
+	return true
+}
+
+func updateOutput(m *model, text string) {
+	text = strings.TrimSpace(text)
+	if text == "" {
+		return
+	}
+	err := m.parser.SetExpr(text)
+	if err != nil {
+		m.output = "invalid cron expression"
+		return
+	}
+	m.output = fmt.Sprint(m.parser)
 }
 
 func findRuneIndexes(str string, search rune) []int {

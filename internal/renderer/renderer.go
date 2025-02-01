@@ -11,5 +11,5 @@ type Parser interface {
 }
 
 type Renderer interface {
-	Render(cp Parser)
+	Render(cp Parser) error
 }

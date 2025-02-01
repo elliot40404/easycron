@@ -102,7 +102,7 @@ func (c CronParser) HumanReadableStr() (string, error) {
 
 var HINTS = [...]string{"minute", "hour", "day of month", "month", "day of week"}
 
-func (c CronParser) GetHints(padding, hintIdx int) string {
+func (CronParser) GetHints(padding, hintIdx int) string {
 	if hintIdx > len(HINTS)-1 {
 		panic("out of bounds")
 	}
